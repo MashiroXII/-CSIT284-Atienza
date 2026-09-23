@@ -48,8 +48,8 @@ class Chart extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
           colors: [
-            theme.colorScheme.primary.withOpacity(0.25),
-            theme.colorScheme.primary.withOpacity(0.05),
+            theme.colorScheme.primary.withValues(alpha: 0.25),
+            theme.colorScheme.primary.withValues(alpha: 0.05),
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -59,7 +59,7 @@ class Chart extends StatelessWidget {
         children: [
           Expanded(
             child: Row(
-              crossAxisAlignment: CrossAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 for (final bucket in buckets)
                   ChartBar(

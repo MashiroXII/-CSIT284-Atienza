@@ -126,7 +126,7 @@ class _NewExpenseState extends State<NewExpense> {
             child: Padding(
               padding: EdgeInsets.fromLTRB(16, 16, 16, keyboardSpace + 16),
               child: Column(
-                crossAxisAlignment: CrossAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Center(
                     child: Container(
@@ -134,7 +134,7 @@ class _NewExpenseState extends State<NewExpense> {
                       height: 4,
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.onSurfaceVariant.withOpacity(0.4),
+                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -149,7 +149,7 @@ class _NewExpenseState extends State<NewExpense> {
                   const SizedBox(height: 16),
                   if (width >= 600)
                     Row(
-                      crossAxisAlignment: CrossAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           child: TextField(
@@ -218,7 +218,7 @@ class _NewExpenseState extends State<NewExpense> {
                         const Spacer(),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
                               _selectedDate == null
@@ -253,7 +253,7 @@ class _NewExpenseState extends State<NewExpense> {
                         Expanded(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
                                 _selectedDate == null

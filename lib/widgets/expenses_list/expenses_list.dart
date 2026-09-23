@@ -30,7 +30,7 @@ class ExpensesList extends StatelessWidget {
               bottom: theme.cardTheme.margin?.vertical ?? 12,
             ),
             decoration: BoxDecoration(
-              color: theme.colorScheme.error.withOpacity(0.85),
+              color: theme.colorScheme.error.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(16),
             ),
             alignment: Alignment.centerLeft,
@@ -58,7 +58,7 @@ class ExpensesList extends StatelessWidget {
               bottom: theme.cardTheme.margin?.vertical ?? 12,
             ),
             decoration: BoxDecoration(
-              color: theme.colorScheme.error.withOpacity(0.85),
+              color: theme.colorScheme.error.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(16),
             ),
             alignment: Alignment.centerRight,
