@@ -66,6 +66,13 @@ class _ExpenseTrackerAppState extends State<ExpenseTrackerApp> {
           ),
           elevation: 2,
         ),
+        bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: kDarkColorScheme.surface,
+          modalBackgroundColor: kDarkColorScheme.surface,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+        ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: kDarkColorScheme.primaryContainer,
@@ -75,6 +82,13 @@ class _ExpenseTrackerAppState extends State<ExpenseTrackerApp> {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          filled: true,
+          fillColor: kDarkColorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         ),
         textTheme: baseTextTheme.apply(
           bodyColor: kDarkColorScheme.onSurface,
@@ -97,6 +111,13 @@ class _ExpenseTrackerAppState extends State<ExpenseTrackerApp> {
           ),
           elevation: 2,
         ),
+        bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: kColorScheme.surface,
+          modalBackgroundColor: kColorScheme.surface,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+        ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: kColorScheme.primary,
@@ -106,6 +127,13 @@ class _ExpenseTrackerAppState extends State<ExpenseTrackerApp> {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          filled: true,
+          fillColor: kColorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         ),
         textTheme: baseTextTheme.apply(
           bodyColor: kColorScheme.onSurface,
