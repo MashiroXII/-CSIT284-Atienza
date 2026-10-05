@@ -1,11 +1,10 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:expense_tracker/models/expense.dart';
-
-final formatter = DateFormat.yMd();
+import 'package:expense_tracker/widgets/adaptive/adaptive_dialog.dart';
+import 'package:expense_tracker/widgets/form/expense_amount_input.dart';
+import 'package:expense_tracker/widgets/form/expense_category_dropdown.dart';
+import 'package:expense_tracker/widgets/form/expense_date_picker.dart';
+import 'package:expense_tracker/widgets/form/expense_title_input.dart';
 
 class NewExpense extends StatefulWidget {
   const NewExpense({
@@ -58,55 +57,6 @@ class _NewExpenseState extends State<NewExpense> {
     }
   }
 
-  void _showErrorDialog() {
-    if (!kIsWeb && Platform.isIOS) {
-      showCupertinoDialog(
-        context: context,
-        builder: (ctx) => CupertinoAlertDialog(
-          title: const Text('Invalid Input'),
-          content: const Text(
-            'Please make sure a valid title, amount, date and category were entered.',
-          ),
-          actions: [
-            CupertinoDialogAction(
-              onPressed: () {
-                Navigator.pop(ctx);
-              },
-              child: const Text('Okay'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Row(
-            children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
-              SizedBox(width: 8),
-              Text('Invalid Input'),
-            ],
-          ),
-          content: const Text(
-            'Please make sure a valid title, amount, date and category were entered.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-              },
-              child: const Text('Okay'),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
   void _submitExpenseData() {
     final enteredAmount = double.tryParse(_amountController.text);
     final amountIsInvalid = enteredAmount == null || enteredAmount <= 0;
@@ -114,7 +64,11 @@ class _NewExpenseState extends State<NewExpense> {
     if (_titleController.text.trim().isEmpty ||
         amountIsInvalid ||
         _selectedDate == null) {
-      _showErrorDialog();
+      AdaptiveDialog.showAlert(
+        context: context,
+        title: 'Invalid Input',
+        message: 'Please make sure a valid title, amount, date and category were entered.',
+      );
       return;
     }
 
@@ -179,63 +133,24 @@ class _NewExpenseState extends State<NewExpense> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: TextField(
-                            controller: _titleController,
-                            maxLength: 50,
-                            decoration: const InputDecoration(
-                              label: Text('Title'),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
+                          child: ExpenseTitleInput(controller: _titleController),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: TextField(
-                            controller: _amountController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            decoration: const InputDecoration(
-                              prefixText: '\$ ',
-                              label: Text('Amount'),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
+                          child: ExpenseAmountInput(controller: _amountController),
                         ),
                       ],
                     )
                   else ...[
-                    TextField(
-                      controller: _titleController,
-                      maxLength: 50,
-                      decoration: const InputDecoration(
-                        label: Text('Title'),
-                        hintText: 'e.g. Groceries',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
+                    ExpenseTitleInput(controller: _titleController),
                     const SizedBox(height: 12),
                   ],
                   if (width >= 600)
                     Row(
                       children: [
-                        DropdownButton<Category>(
-                          value: _selectedCategory,
-                          items: Category.values
-                              .map(
-                                (category) => DropdownMenuItem(
-                                  value: category,
-                                  child: Row(
-                                    children: [
-                                      Icon(categoryIcons[category], size: 20),
-                                      const SizedBox(width: 8),
-                                      Text(categoryNames[category] ?? ''),
-                                    ],
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
+                        ExpenseCategoryDropdown(
+                          selectedCategory: _selectedCategory,
+                          onCategoryChanged: (value) {
                             if (value == null) return;
                             setState(() {
                               _selectedCategory = value;
@@ -243,20 +158,9 @@ class _NewExpenseState extends State<NewExpense> {
                           },
                         ),
                         const Spacer(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              _selectedDate == null
-                                  ? 'No Date Selected'
-                                  : formatter.format(_selectedDate!),
-                            ),
-                            IconButton(
-                              onPressed: _presentDatePicker,
-                              icon: const Icon(Icons.calendar_month),
-                            ),
-                          ],
+                        ExpenseDatePicker(
+                          selectedDate: _selectedDate,
+                          onSelectDate: _presentDatePicker,
                         ),
                       ],
                     )
@@ -264,35 +168,13 @@ class _NewExpenseState extends State<NewExpense> {
                     Row(
                       children: [
                         Expanded(
-                          child: TextField(
-                            controller: _amountController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            decoration: const InputDecoration(
-                              prefixText: '\$ ',
-                              label: Text('Amount'),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
+                          child: ExpenseAmountInput(controller: _amountController),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                _selectedDate == null
-                                    ? 'No Date'
-                                    : formatter.format(_selectedDate!),
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                              IconButton(
-                                onPressed: _presentDatePicker,
-                                icon: const Icon(Icons.calendar_month),
-                              ),
-                            ],
+                          child: ExpenseDatePicker(
+                            selectedDate: _selectedDate,
+                            onSelectDate: _presentDatePicker,
                           ),
                         ),
                       ],
@@ -301,27 +183,9 @@ class _NewExpenseState extends State<NewExpense> {
                   if (width < 600)
                     Row(
                       children: [
-                        DropdownButton<Category>(
-                          value: _selectedCategory,
-                          items: Category.values
-                              .map(
-                                (category) => DropdownMenuItem(
-                                  value: category,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        categoryIcons[category],
-                                        size: 20,
-                                        color: theme.colorScheme.primary,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(categoryNames[category] ?? ''),
-                                    ],
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
+                        ExpenseCategoryDropdown(
+                          selectedCategory: _selectedCategory,
+                          onCategoryChanged: (value) {
                             if (value == null) return;
                             setState(() {
                               _selectedCategory = value;
@@ -330,9 +194,7 @@ class _NewExpenseState extends State<NewExpense> {
                         ),
                         const Spacer(),
                         TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
+                          onPressed: () => Navigator.pop(context),
                           child: const Text('Cancel'),
                         ),
                         ElevatedButton.icon(
@@ -347,9 +209,7 @@ class _NewExpenseState extends State<NewExpense> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
+                          onPressed: () => Navigator.pop(context),
                           child: const Text('Cancel'),
                         ),
                         ElevatedButton.icon(
