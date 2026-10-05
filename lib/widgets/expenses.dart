@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:expense_tracker/data/dummy_expenses.dart';
 import 'package:expense_tracker/models/expense.dart';
-import 'package:expense_tracker/widgets/budget_card.dart';
-import 'package:expense_tracker/widgets/category_filter_bar.dart';
-import 'package:expense_tracker/widgets/chart/chart.dart';
+import 'package:expense_tracker/widgets/common/empty_state.dart';
 import 'package:expense_tracker/widgets/expenses_list/expenses_list.dart';
 import 'package:expense_tracker/widgets/new_expense.dart';
+import 'package:expense_tracker/widgets/views/landscape_expenses_view.dart';
+import 'package:expense_tracker/widgets/views/portrait_expenses_view.dart';
 
 enum SortOption { dateDescending, dateAscending, amountDescending, amountAscending }
 
@@ -177,38 +177,12 @@ class _ExpensesState extends State<Expenses> {
     final theme = Theme.of(context);
     final displayedExpenses = _filteredAndSortedExpenses;
 
-    Widget mainContent = Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 64,
-            color: theme.colorScheme.outline.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'No expenses found',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Try adjusting your search or add a new expense.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.outline,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: _openAddExpenseOverlay,
-            icon: const Icon(Icons.add),
-            label: const Text('Add Expense'),
-          ),
-        ],
-      ),
+    Widget mainContent = EmptyState(
+      title: 'No expenses found',
+      message: 'Try adjusting your search query or add a new expense item.',
+      icon: Icons.receipt_long_outlined,
+      actionLabel: 'Add Expense',
+      onActionPressed: _openAddExpenseOverlay,
     );
 
     if (displayedExpenses.isNotEmpty) {
@@ -313,76 +287,45 @@ class _ExpensesState extends State<Expenses> {
         label: const Text('Add Expense'),
       ),
       body: width < 600
-          ? Column(
-              children: [
-                BudgetCard(
-                  totalSpent: _totalSpent,
-                  budgetLimit: _budgetLimit,
-                  expenseCount: _registeredExpenses.length,
-                  onSetBudget: _openSetBudgetDialog,
-                ),
-                Chart(expenses: _registeredExpenses),
-                CategoryFilterBar(
-                  selectedCategory: _selectedCategoryFilter,
-                  onSelectCategory: (category) {
-                    setState(() {
-                      _selectedCategoryFilter = category;
-                    });
-                  },
-                  searchQuery: _searchQuery,
-                  onSearchChanged: (query) {
-                    setState(() {
-                      _searchQuery = query;
-                    });
-                  },
-                ),
-                const SizedBox(height: 4),
-                Expanded(
-                  child: mainContent,
-                ),
-              ],
+          ? PortraitExpensesView(
+              totalSpent: _totalSpent,
+              budgetLimit: _budgetLimit,
+              expenseCount: _registeredExpenses.length,
+              registeredExpenses: _registeredExpenses,
+              selectedCategoryFilter: _selectedCategoryFilter,
+              searchQuery: _searchQuery,
+              mainContent: mainContent,
+              onSetBudget: _openSetBudgetDialog,
+              onSelectCategory: (category) {
+                setState(() {
+                  _selectedCategoryFilter = category;
+                });
+              },
+              onSearchChanged: (query) {
+                setState(() {
+                  _searchQuery = query;
+                });
+              },
             )
-          : Row(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        BudgetCard(
-                          totalSpent: _totalSpent,
-                          budgetLimit: _budgetLimit,
-                          expenseCount: _registeredExpenses.length,
-                          onSetBudget: _openSetBudgetDialog,
-                        ),
-                        Chart(expenses: _registeredExpenses),
-                      ],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      CategoryFilterBar(
-                        selectedCategory: _selectedCategoryFilter,
-                        onSelectCategory: (category) {
-                          setState(() {
-                            _selectedCategoryFilter = category;
-                          });
-                        },
-                        searchQuery: _searchQuery,
-                        onSearchChanged: (query) {
-                          setState(() {
-                            _searchQuery = query;
-                          });
-                        },
-                      ),
-                      Expanded(
-                        child: mainContent,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          : LandscapeExpensesView(
+              totalSpent: _totalSpent,
+              budgetLimit: _budgetLimit,
+              expenseCount: _registeredExpenses.length,
+              registeredExpenses: _registeredExpenses,
+              selectedCategoryFilter: _selectedCategoryFilter,
+              searchQuery: _searchQuery,
+              mainContent: mainContent,
+              onSetBudget: _openSetBudgetDialog,
+              onSelectCategory: (category) {
+                setState(() {
+                  _selectedCategoryFilter = category;
+                });
+              },
+              onSearchChanged: (query) {
+                setState(() {
+                  _searchQuery = query;
+                });
+              },
             ),
     );
   }
