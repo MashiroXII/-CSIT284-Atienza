@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:expense_tracker/widgets/expenses.dart';
+import 'package:expense_tracker/screens/tabs_screen.dart';
 
 var kColorScheme = ColorScheme.fromSeed(
   seedColor: const Color(0xFF2E3192),
@@ -140,7 +140,7 @@ class _ExpenseTrackerAppState extends State<ExpenseTrackerApp> {
           displayColor: kColorScheme.onSurface,
         ),
       ),
-      home: Expenses(
+      home: TabsScreen(
         onToggleTheme: _toggleTheme,
         currentThemeMode: _themeMode,
       ),
