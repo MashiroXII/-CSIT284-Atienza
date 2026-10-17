@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:expense_tracker/data/dummy_expenses.dart';
 import 'package:expense_tracker/models/expense.dart';
+import 'package:expense_tracker/screens/expense_details_screen.dart';
 import 'package:expense_tracker/widgets/common/empty_state.dart';
 import 'package:expense_tracker/widgets/expenses_list/expenses_list.dart';
 import 'package:expense_tracker/widgets/new_expense.dart';
@@ -9,27 +9,35 @@ import 'package:expense_tracker/widgets/views/portrait_expenses_view.dart';
 
 enum SortOption { dateDescending, dateAscending, amountDescending, amountAscending }
 
-class Expenses extends StatefulWidget {
-  const Expenses({
+class ExpensesScreen extends StatefulWidget {
+  const ExpensesScreen({
     super.key,
+    required this.registeredExpenses,
+    required this.budgetLimit,
+    required this.onAddOrUpdateExpense,
+    required this.onRemoveExpense,
+    required this.onUpdateBudget,
     required this.onToggleTheme,
     required this.currentThemeMode,
   });
 
+  final List<Expense> registeredExpenses;
+  final double budgetLimit;
+  final void Function(Expense expense) onAddOrUpdateExpense;
+  final void Function(Expense expense) onRemoveExpense;
+  final void Function(double newBudget) onUpdateBudget;
   final VoidCallback onToggleTheme;
   final ThemeMode currentThemeMode;
 
   @override
-  State<Expenses> createState() {
-    return _ExpensesState();
+  State<ExpensesScreen> createState() {
+    return _ExpensesScreenState();
   }
 }
 
-class _ExpensesState extends State<Expenses> {
-  final List<Expense> _registeredExpenses = List.from(dummyExpenses);
+class _ExpensesScreenState extends State<ExpensesScreen> {
   Category? _selectedCategoryFilter;
   String _searchQuery = '';
-  double _budgetLimit = 1000.0;
   SortOption _currentSort = SortOption.dateDescending;
 
   void _openAddExpenseOverlay() {
@@ -40,66 +48,27 @@ class _ExpensesState extends State<Expenses> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (ctx) => NewExpense(onAddExpense: _addOrUpdateExpense),
+      builder: (ctx) => NewExpense(onAddExpense: widget.onAddOrUpdateExpense),
     );
   }
 
-  void _openEditExpenseOverlay(Expense expense) {
-    showModalBottomSheet(
-      useSafeArea: true,
-      isScrollControlled: true,
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => NewExpense(
-        onAddExpense: _addOrUpdateExpense,
-        expenseToEdit: expense,
+  void _navigateToExpenseDetails(Expense expense) async {
+    final result = await Navigator.of(context).push<dynamic>(
+      MaterialPageRoute(
+        builder: (ctx) => ExpenseDetailsScreen(expense: expense),
       ),
     );
-  }
 
-  void _addOrUpdateExpense(Expense expense) {
-    setState(() {
-      final existingIndex = _registeredExpenses.indexWhere((e) => e.id == expense.id);
-      if (existingIndex >= 0) {
-        _registeredExpenses[existingIndex] = expense;
-      } else {
-        _registeredExpenses.insert(0, expense);
-      }
-    });
-  }
-
-  void _removeExpense(Expense expense) {
-    final expenseIndex = _registeredExpenses.indexOf(expense);
-    setState(() {
-      _registeredExpenses.remove(expense);
-    });
-
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        duration: const Duration(seconds: 4),
-        content: Text('Deleted "${expense.title}"'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        action: SnackBarAction(
-          label: 'Undo',
-          onPressed: () {
-            setState(() {
-              _registeredExpenses.insert(expenseIndex, expense);
-            });
-          },
-        ),
-      ),
-    );
+    if (result == 'delete') {
+      widget.onRemoveExpense(expense);
+    } else if (result is Expense) {
+      widget.onAddOrUpdateExpense(result);
+    }
   }
 
   void _openSetBudgetDialog() {
     final controller = TextEditingController(
-      text: _budgetLimit.toStringAsFixed(0),
+      text: widget.budgetLimit.toStringAsFixed(0),
     );
 
     showDialog(
@@ -127,9 +96,7 @@ class _ExpensesState extends State<Expenses> {
             onPressed: () {
               final newBudget = double.tryParse(controller.text);
               if (newBudget != null && newBudget > 0) {
-                setState(() {
-                  _budgetLimit = newBudget;
-                });
+                widget.onUpdateBudget(newBudget);
               }
               Navigator.pop(ctx);
             },
@@ -141,7 +108,7 @@ class _ExpensesState extends State<Expenses> {
   }
 
   List<Expense> get _filteredAndSortedExpenses {
-    var list = _registeredExpenses.where((expense) {
+    var list = widget.registeredExpenses.where((expense) {
       final matchesCategory = _selectedCategoryFilter == null ||
           expense.category == _selectedCategoryFilter;
       final matchesSearch = _searchQuery.isEmpty ||
@@ -168,7 +135,7 @@ class _ExpensesState extends State<Expenses> {
   }
 
   double get _totalSpent {
-    return _registeredExpenses.fold(0.0, (sum, item) => sum + item.amount);
+    return widget.registeredExpenses.fold(0.0, (sum, item) => sum + item.amount);
   }
 
   @override
@@ -188,8 +155,8 @@ class _ExpensesState extends State<Expenses> {
     if (displayedExpenses.isNotEmpty) {
       mainContent = ExpensesList(
         expenses: displayedExpenses,
-        onRemoveExpense: _removeExpense,
-        onEditExpense: _openEditExpenseOverlay,
+        onRemoveExpense: widget.onRemoveExpense,
+        onEditExpense: _navigateToExpenseDetails,
       );
     }
 
@@ -289,9 +256,9 @@ class _ExpensesState extends State<Expenses> {
       body: width < 600
           ? PortraitExpensesView(
               totalSpent: _totalSpent,
-              budgetLimit: _budgetLimit,
-              expenseCount: _registeredExpenses.length,
-              registeredExpenses: _registeredExpenses,
+              budgetLimit: widget.budgetLimit,
+              expenseCount: widget.registeredExpenses.length,
+              registeredExpenses: widget.registeredExpenses,
               selectedCategoryFilter: _selectedCategoryFilter,
               searchQuery: _searchQuery,
               mainContent: mainContent,
@@ -309,9 +276,9 @@ class _ExpensesState extends State<Expenses> {
             )
           : LandscapeExpensesView(
               totalSpent: _totalSpent,
-              budgetLimit: _budgetLimit,
-              expenseCount: _registeredExpenses.length,
-              registeredExpenses: _registeredExpenses,
+              budgetLimit: widget.budgetLimit,
+              expenseCount: widget.registeredExpenses.length,
+              registeredExpenses: widget.registeredExpenses,
               selectedCategoryFilter: _selectedCategoryFilter,
               searchQuery: _searchQuery,
               mainContent: mainContent,
